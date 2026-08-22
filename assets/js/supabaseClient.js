@@ -91,7 +91,7 @@ window.fetch = async function(...args) {
       if (method === 'POST') {
         const body = JSON.parse(options.body);
         let items = body.items;
-        delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials;
+        delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials; delete body.allow_backorder; delete body.account_edit_id; let o_qty = body.opening_qty; let o_cost = body.opening_cost; let o_batch = body.opening_batch_no; delete body.opening_qty; delete body.opening_cost; delete body.opening_batch_no;
         const { data, error } = await supabase.from(supaTable).insert([body]).select();
         if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         let newRecord = data[0];
@@ -103,12 +103,13 @@ window.fetch = async function(...args) {
             let childTable = supaTable === 'orders' ? 'order_items' : (supaTable === 'purchases' ? 'purchase_items' : null);
             if (childTable) await supabase.from(childTable).insert(items);
         }
+        if (supaTable === 'inventory_items' && o_qty > 0) { await supabase.from('stock_batches').insert([{ item_id: newRecord.id, item_type: 'inventory', batch_no: o_batch || 'OPENING', initial_qty: o_qty, current_qty: o_qty, purchase_price: o_cost || 0 }]); }
         return new Response(JSON.stringify({ success: true, data: newRecord }), { status: 200 });
       }
       
       if (method === 'PUT') {
         const body = JSON.parse(options.body);
-        delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials;
+        delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials; delete body.allow_backorder; delete body.account_edit_id; let o_qty = body.opening_qty; let o_cost = body.opening_cost; let o_batch = body.opening_batch_no; delete body.opening_qty; delete body.opening_cost; delete body.opening_batch_no;
         const { data, error } = await supabase.from(supaTable).update(body).eq('id', id).select();
         if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         return new Response(JSON.stringify({ success: true, data: data[0] }), { status: 200 });
@@ -127,6 +128,8 @@ window.fetch = async function(...args) {
   
   return originalFetchSupabase(...args);
 };
+
+
 
 
 
