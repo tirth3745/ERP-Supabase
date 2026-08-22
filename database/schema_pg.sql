@@ -300,7 +300,7 @@ CREATE TABLE IF NOT EXISTS master_options (
 
 -- Supabase Dashboard RPC Function
 CREATE OR REPLACE FUNCTION get_dashboard_stats()
-RETURNS json AS $$
+RETURNS json AS $
 DECLARE
   result json;
 BEGIN
@@ -314,10 +314,9 @@ BEGIN
       'expenses', COALESCE((SELECT SUM(amount) FROM expenses), 0),
       'profit', 0
     ),
-    'recentActivities', (SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json) FROM (SELECT order_no as identifier, client_name, order_date as date, total_amount, status FROM orders ORDER BY order_date DESC LIMIT 5) t),
-    'stockAlerts', (SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json) FROM (SELECT name, 'Product' as type, stock, reorder_level, unit FROM inventory_items WHERE stock < reorder_level LIMIT 10) t)
+    'recentActivities', (SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json) FROM (SELECT order_no as identifier, client_name, date as date, total_amount, status FROM orders ORDER BY date DESC NULLS LAST LIMIT 5) t),
+    'stockAlerts', (SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json) FROM (SELECT name, 'Product' as type, COALESCE((SELECT SUM(current_qty) FROM stock_batches WHERE item_id = inventory_items.id AND item_type = 'Inventory'), 0) as stock, reorder_level, unit FROM inventory_items WHERE COALESCE((SELECT SUM(current_qty) FROM stock_batches WHERE item_id = inventory_items.id AND item_type = 'Inventory'), 0) < reorder_level LIMIT 10) t)
   ) INTO result;
   RETURN result;
 END;
-$$ LANGUAGE plpgsql;
-
+$ LANGUAGE plpgsql;
