@@ -38,8 +38,12 @@
     <div class="status">Initialising database…</div>
   </div>
   <script>
-    window.location.href = 'pages/dashboard.html';
+    let base = window.location.pathname;
+    if (base.endsWith('index.html')) { base = base.replace('index.html', ''); }
+    if (!base.endsWith('/')) { base += '/'; }
+    window.location.href = base + 'pages/dashboard.html';
   </script>
 </body>
 </html>
+
 
