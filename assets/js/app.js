@@ -5,7 +5,7 @@
 (function() {
   const originalFetch = window.fetch;
   window.fetch = async function(...args) {
-    const response = await originalFetch(...args);
+    const response = await originalFetch.apply(window, args);
     if (response.status === 401 && typeof args[0] === 'string' && !args[0].includes('/api/auth/')) {
       const pathname = window.location.pathname;
       if (!pathname.includes('login.html')) {

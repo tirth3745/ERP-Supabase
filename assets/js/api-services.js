@@ -3,7 +3,7 @@
 
 const throwErr = (err, context) => {
     if (err) {
-        console.error([Supabase Error] :, err);
+        console.error(`[Supabase Error] ${context}:`, err);
         throw new Error(err.message || err.error_description || 'Unknown database error');
     }
 };
@@ -430,8 +430,8 @@ window.apiService = {
         },
         getById: async (id) => {
             const { data, error } = await supabase.from('daily_transactions').select('*').eq('id', id).single();
-            const { data: items } = await supabase.from('daily_transaction_items').select('*').eq('daily_txn_id', id);
-            const { data: materials } = await supabase.from('daily_transaction_materials').select('*').eq('daily_txn_id', id);
+            const { data: items, error: itErr } = await supabase.from('daily_transaction_items').select('*').eq('daily_txn_id', id);
+            const { data: materials, error: matErr } = await supabase.from('daily_transaction_materials').select('*').eq('daily_txn_id', id);
             if (data) { data.items = items || []; data.materials = materials || []; }
             return handleResponse(data, error, 'dailyTransactions.getById');
         },

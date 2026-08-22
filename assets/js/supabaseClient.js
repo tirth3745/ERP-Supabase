@@ -26,7 +26,7 @@ window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         if (url.includes('/next-no')) return new Response(JSON.stringify(await window.apiService.utils.getNextTxnNo()), { status: 200 });
 
         const service = window.apiService[serviceName];
-        if (!service) return originalFetchSupabase(...args);
+        if (!service) return originalFetchSupabase.apply(window, args);
 
         try {
             let data;
@@ -49,7 +49,7 @@ window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
         }
     }
-    return originalFetchSupabase(...args);
+    return originalFetchSupabase.apply(window, args);
   };
   
   async function handleCustomPackaging(url) {
