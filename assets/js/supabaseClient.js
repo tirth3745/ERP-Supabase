@@ -96,7 +96,7 @@ window.fetch = async function(...args) {
         let mat = body.materials;
         
         delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials; delete body.allow_backorder; delete body.account_edit_id;
-        let o_qty = body.opening_qty; let o_cost = body.opening_cost; let o_batch = body.opening_batch_no;
+        if (body.batch_no === '') body.batch_no = null; if (body.order_no === '') body.order_no = null; if (body.invoice_no === '') body.invoice_no = null; let o_qty = body.opening_qty; let o_cost = body.opening_cost; let o_batch = body.opening_batch_no;
         delete body.opening_qty; delete body.opening_cost; delete body.opening_batch_no;
         
         let newRecord;
@@ -163,6 +163,7 @@ window.fetch = async function(...args) {
   
   return originalFetchSupabase(...args);
 };
+
 
 
 
