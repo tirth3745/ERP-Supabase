@@ -12,15 +12,13 @@ function updatePageDebug(text, color) {
 async function loadSuppliers() {
   console.log('Loading suppliers...');
   updatePageDebug('Loading Suppliers...', '#10B981');
-  
+
   try {
     UTILS.renderTableSkeleton('suppliers-table');
-    
+
     console.log('Suppliers: Loading suppliers from backend API...');
-    const { data, error } = await supabase.from('suppliers').select('*').order('name');
-    if (error) throw new Error(error.message);
-    allSuppliers = data || [];
-    
+    allSuppliers = await window.apiService.suppliers.getAll();
+
     renderTable(allSuppliers);
     
     updatePageDebug('Ready (' + allSuppliers.length + ')', '#10B981');
@@ -99,15 +97,12 @@ async function saveSupplier() {
   if (!d.name) { APP.showToast('Supplier name is required', 'error'); return; }
   
   try {
-    let error;
     if (editingSupplierId) {
-      ({ error } = await supabase.from('suppliers').update(d).eq('id', editingSupplierId));
+      await window.apiService.suppliers.update(editingSupplierId, d);
     } else {
-      ({ error } = await supabase.from('suppliers').insert([d]));
+      await window.apiService.suppliers.create(d);
     }
-    
-    if (error) throw new Error(error.message);
-    
+
     APP.showToast(editingSupplierId ? 'Supplier updated!' : 'Supplier added!', 'success');
     APP.closeModal('supplier-modal');
     setTimeout(() => loadSuppliers(), 100);
@@ -119,20 +114,18 @@ async function saveSupplier() {
 
 async function deleteSupplier(id) {
   try {
-    // 1. Fetch details of dependencies from stats endpoint
-    const { count: purchasesCount } = await supabase.from('purchases').select('*', { count: 'exact', head: true }).eq('supplier_id', id);
-    const { count: batchesCount } = await supabase.from('stock_batches').select('*', { count: 'exact', head: true }).eq('supplier_id', id);
-    
+    const purchasesCount = await supabase.from('purchases').select('*', { count: 'exact', head: true }).eq('supplier_id', id).then(r => r.count || 0);
+    const batchesCount = await supabase.from('stock_batches').select('*', { count: 'exact', head: true }).eq('supplier_id', id).then(r => r.count || 0);
+
     let message = 'Delete this supplier?';
     if (purchasesCount || batchesCount) {
       message = `This supplier has ${purchasesCount || 0} linked purchase(s) and ${batchesCount || 0} batch record(s). Delete anyway?`;
     }
-    
+
     APP.showConfirm(message, async () => {
       try {
-        const { error } = await supabase.from('suppliers').delete().eq('id', id);
-        if (error) throw new Error(error.message);
-        
+        await window.apiService.suppliers.delete(id);
+
         APP.showToast('Supplier deleted!', 'success');
         setTimeout(() => loadSuppliers(), 100);
       } catch (e) {

@@ -16,11 +16,9 @@ async function loadDashboard() {
   
   try {
     renderDashboardSkeleton();
-    
-    // Call the Postgres RPC function that calculates all dashboard statistics
-    const { data: stats, error } = await supabase.rpc('get_dashboard_stats');
-    if (error) throw new Error(error.message);
-    
+
+    const stats = await window.apiService.dashboard.getStats();
+
     // 1. Render KPIs
     const kpis = stats.kpis || {};
     

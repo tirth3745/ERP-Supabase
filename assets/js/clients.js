@@ -12,15 +12,13 @@ function updatePageDebug(text, color) {
 async function loadClients() {
   console.log('Loading clients...');
   updatePageDebug('Loading Clients...', '#10B981');
-  
+
   try {
     UTILS.renderTableSkeleton('clients-table');
-    
+
     console.log('Clients: Loading clients from backend API...');
-    const { data, error } = await supabase.from('clients').select('*').order('name');
-    if (error) throw new Error(error.message);
-    allClients = data || [];
-    
+    allClients = await window.apiService.clients.getAll();
+
     filterAndRender();
     
     updatePageDebug('Ready (' + allClients.length + ')', '#10B981');
@@ -105,15 +103,12 @@ async function saveClient() {
   if (!d.type) d.type = 'Retailer';
   
   try {
-    let error;
     if (editingClientId) {
-      ({ error } = await supabase.from('clients').update(d).eq('id', editingClientId));
+      await window.apiService.clients.update(editingClientId, d);
     } else {
-      ({ error } = await supabase.from('clients').insert([d]));
+      await window.apiService.clients.create(d);
     }
-    
-    if (error) throw new Error(error.message);
-    
+
     APP.showToast(editingClientId ? 'Client updated!' : 'Client added!', 'success');
     APP.closeModal('client-modal');
     setTimeout(() => loadClients(), 100);
@@ -125,19 +120,18 @@ async function saveClient() {
 
 async function deleteClient(id) {
   try {
-    const { count: ordersCount } = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('client_id', id);
-    const { count: salesCount } = await supabase.from('daily_transactions').select('*', { count: 'exact', head: true }).eq('client_id', id);
-    
+    const ordersCount = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('client_id', id).then(r => r.count || 0);
+    const salesCount = await supabase.from('daily_transactions').select('*', { count: 'exact', head: true }).eq('client_id', id).then(r => r.count || 0);
+
     let message = 'Delete this client?';
     if (ordersCount || salesCount) {
       message = `This client has ${ordersCount || 0} linked order(s) and ${salesCount || 0} counter sale(s). Delete anyway?`;
     }
-    
+
     APP.showConfirm(message, async () => {
       try {
-        const { error } = await supabase.from('clients').delete().eq('id', id);
-        if (error) throw new Error(error.message);
-        
+        await window.apiService.clients.delete(id);
+
         APP.showToast('Client deleted!', 'success');
         setTimeout(() => loadClients(), 100);
       } catch (e) {

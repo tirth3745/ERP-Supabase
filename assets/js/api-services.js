@@ -1,6 +1,15 @@
 // api-services.js
 // Standardized Supabase Data Access Layer
 
+const withSupabase = () => {
+    if (!window.supabase || typeof window.supabase.from !== 'function') {
+        const message = 'Supabase client is not configured. Set window.__ERP_SUPABASE_URL__ and window.__ERP_SUPABASE_ANON_KEY__ before loading ERP pages.';
+        console.error('[ERP] ' + message);
+        throw new Error(message);
+    }
+    return window.supabase;
+};
+
 const throwErr = (err, context) => {
     if (err) {
         console.error(`[Supabase Error] ${context}:`, err);
@@ -26,26 +35,40 @@ const sanitizePayload = (payload) => {
 };
 
 window.apiService = {
+    // ---- HEALTH / DASHBOARD ----
+    dashboard: {
+        getStats: async () => {
+            const client = withSupabase();
+            const { data, error } = await client.rpc('get_dashboard_stats');
+            return handleResponse(data, error, 'dashboard.getStats');
+        }
+    },
+
     // ---- CLIENTS ----
     clients: {
         getAll: async () => {
-            const { data, error } = await supabase.from('clients').select('*').order('name');
+            const client = withSupabase();
+            const { data, error } = await client.from('clients').select('*').order('name');
             return handleResponse(data, error, 'clients.getAll');
         },
         getById: async (id) => {
-            const { data, error } = await supabase.from('clients').select('*').eq('id', id).single();
+            const client = withSupabase();
+            const { data, error } = await client.from('clients').select('*').eq('id', id).single();
             return handleResponse(data, error, 'clients.getById');
         },
         create: async (payload) => {
-            const { data, error } = await supabase.from('clients').insert([sanitizePayload(payload)]).select();
+            const client = withSupabase();
+            const { data, error } = await client.from('clients').insert([sanitizePayload(payload)]).select();
             return handleResponse(data, error, 'clients.create')[0];
         },
         update: async (id, payload) => {
-            const { data, error } = await supabase.from('clients').update(sanitizePayload(payload)).eq('id', id).select();
+            const client = withSupabase();
+            const { data, error } = await client.from('clients').update(sanitizePayload(payload)).eq('id', id).select();
             return handleResponse(data, error, 'clients.update')[0];
         },
         delete: async (id) => {
-            const { error } = await supabase.from('clients').delete().eq('id', id);
+            const client = withSupabase();
+            const { error } = await client.from('clients').delete().eq('id', id);
             throwErr(error, 'clients.delete');
             return true;
         }
