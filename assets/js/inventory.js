@@ -18,9 +18,7 @@ async function loadInventory() {
     await loadMasterOptions();
     await loadCatalogProductSuggestions();
 
-    const res = await fetch('/api/inventory');
-    if (!res.ok) throw new Error('Failed to fetch inventory from API');
-    const items = await res.json();
+    const items = await window.apiService.inventory.getAll();
     
     allInventory = items.map(ii => {
       const stock = parseFloat(ii.stock) || 0;
@@ -193,9 +191,7 @@ async function deleteInventoryItem(itemType, id) {
   let message = 'Delete this inventory item?';
   APP.showConfirm(message, async () => {
     try {
-      const res = await fetch(`/api/inventory/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete item');
+      await window.apiService.inventory.delete(id);
       
       APP.showToast('Inventory item deleted!', 'success');
       setTimeout(() => loadInventory(), 100);
@@ -276,9 +272,7 @@ let masterCache = { technical: [], bottles: [], boxes: [], labels: [] };
 
 async function loadMasterOptions(targetUnit = null) {
   try {
-    const res = await fetch('/api/master-options');
-    if (!res.ok) throw new Error('Failed to fetch options');
-    const opts = await res.json();
+    const opts = await window.apiService.masterOptions.getAll();
     
     masterCache.technical = opts.filter(o => o.category === 'technical_unit');
     masterCache.bottles = opts.filter(o => o.category === 'bottle_option');
@@ -541,9 +535,7 @@ function openAddOther() {
 async function openEdit(type, id) {
   editingItemId = id;
   try {
-    const res = await fetch(`/api/inventory/${id}`);
-    if (!res.ok) throw new Error('Failed to load item info');
-    const it = await res.json();
+    const it = await window.apiService.inventory.getById(id);
 
     toggleOpeningStockSection();
 
@@ -1045,9 +1037,7 @@ function resetBoxManagerForm() {
 async function deleteMasterOption(id) {
   APP.showConfirm('Delete this option?', async () => {
     try {
-      const res = await fetch(`/api/master-options/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete option');
+      await window.apiService.masterOptions.delete(id);
       
       APP.showToast('Option deleted', 'success');
       

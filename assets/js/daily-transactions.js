@@ -143,9 +143,7 @@ async function loadDailyTransactions() {
     }
     renderLowStockAlerts();
 
-    const resTxn = await fetch('/api/daily-transactions');
-    if (!resTxn.ok) throw new Error('Failed to fetch daily transactions');
-    allDailyTransactions = await resTxn.json();
+    const allDailyTransactions = await window.apiService.dailyTransactions.getAll();
 
     ['search-input', 'date-from-filter', 'date-to-filter'].forEach(id => {
       const el = document.getElementById(id);
@@ -300,9 +298,7 @@ async function openEdit(id) {
   resetMaterialEntryFields();
 
   try {
-    const res = await fetch(`/api/daily-transactions/${id}`);
-    if (!res.ok) throw new Error('Failed to load transaction details');
-    const t = await res.json();
+    const t = await window.apiService.dailyTransactions.getById(id);
 
     document.getElementById('modal-title').textContent = 'Edit Daily Entry';
     document.getElementById('txn-no-field').value = t.txn_no;
@@ -504,9 +500,7 @@ async function saveTransaction() {
 async function deleteTransaction(id) {
   APP.showConfirm('Delete this entry? All deducted inventory stock will be restored.', async () => {
     try {
-      const res = await fetch(`/api/daily-transactions/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete transaction');
+      await window.apiService.dailyTransactions.delete(id);
 
       APP.showToast('Entry deleted and inventory restored.', 'warning');
       setTimeout(() => loadDailyTransactions(), 100);

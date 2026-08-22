@@ -692,10 +692,7 @@ async function openEdit(id) {
   });
 
   try {
-    const res = await fetch(`/api/formulations/${id}`);
-    if (!res.ok) throw new Error('Failed to load formulation details');
-
-    const details = await res.json();
+    const details = await window.apiService.formulations.getById(id);
     ingredientRows = (details.ingredients || []).map(item => createIngredientRow(item));
     if (ingredientRows.length < 2) {
       ingredientRows.push(createIngredientRow());
@@ -929,9 +926,7 @@ async function confirmProduction() {
 async function deleteFormulation(id) {
   APP.showConfirm('Delete this formulation and its ingredients?', async () => {
     try {
-      const res = await fetch(`/api/formulations/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete formulation');
+      await window.apiService.formulations.delete(id);
 
       APP.showToast('Formulation deleted.', 'success');
       setTimeout(() => loadFormulations(), 100);

@@ -30,9 +30,7 @@ async function loadCalculator() {
     // DB init removed for Supabase
     
     // Fetch all formulations
-    const resForm = await fetch('/api/formulations');
-    if (!resForm.ok) throw new Error('Failed to fetch formulations');
-    allFormulations = await resForm.json();
+    const allFormulations = await window.apiService.formulations.getAll();
     
     // Fetch all inventory items for checking raw materials stock
     const resInv = await fetch('/api/inventory');

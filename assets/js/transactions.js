@@ -22,9 +22,7 @@ async function loadTransactions() {
     // DB init removed for Supabase
     await loadAccounts();
     
-    const res = await fetch('/api/transactions');
-    if (!res.ok) throw new Error('Failed to fetch transactions');
-    allTransactions = await res.json();
+    const allTransactions = await window.apiService.transactions.getAll();
     
     applyFilters();
     
@@ -156,9 +154,7 @@ async function saveTxn() {
 async function deleteTxn(id) {
   APP.showConfirm('Delete this transaction?', async () => {
     try {
-      const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete transaction');
+      await window.apiService.transactions.delete(id);
       
       APP.showToast('Transaction deleted.', 'warning');
       setTimeout(() => loadTransactions(), 100);
@@ -199,9 +195,7 @@ let allAccounts = [];
 
 async function loadAccounts() {
   try {
-    const res = await fetch('/api/accounts');
-    if (!res.ok) throw new Error('Failed to load accounts');
-    allAccounts = await res.json();
+    const allAccounts = await window.apiService.accounts.getAll();
 
     // Populate filters and dropdowns
     const filterSelect = document.getElementById('account-filter');
@@ -352,9 +346,7 @@ async function saveAccount() {
 async function deleteAccount(id) {
   APP.showConfirm('Are you sure you want to delete this account? Transactions associated with it will remain but won\'t be assigned to this account anymore.', async () => {
     try {
-      const res = await fetch(`/api/accounts/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete account');
+      await window.apiService.accounts.delete(id);
 
       APP.showToast('Account deleted', 'warning');
       closeAccountForm();

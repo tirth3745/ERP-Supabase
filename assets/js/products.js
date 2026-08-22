@@ -207,9 +207,7 @@ function updatePageDebug(text, color) {
 let rawInventoryItems = [];
 async function loadTechnicalInventorySuggestions() {
   try {
-    const res = await fetch('/api/inventory');
-    if (!res.ok) throw new Error('Failed to load inventory');
-    rawInventoryItems = await res.json();
+    const rawInventoryItems = await window.apiService.inventory.getAll();
     technicalInventoryNames = (rawInventoryItems || [])
       .filter(item => String(item.category || '').trim().toLowerCase() === 'technical')
       .map(item => item.name)
@@ -237,9 +235,7 @@ async function loadProducts() {
     // DB init removed for Supabase
     
     // Fetch products
-    const resProd = await fetch('/api/products');
-    if (!resProd.ok) throw new Error('Failed to load products from API');
-    allProducts = await resProd.json();
+    const allProducts = await window.apiService.products.getAll();
     
     // Fetch packaging options
     const resPkg = await fetch('/api/products/packaging');
@@ -762,9 +758,7 @@ async function saveProduct() {
 async function deleteProduct(id) {
   APP.showConfirm('Delete this product and its packaging variants?', async () => {
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete product');
+      await window.apiService.products.delete(id);
       
       APP.showToast('Product deleted!', 'success');
       setTimeout(() => loadProducts(), 100);

@@ -43,9 +43,7 @@ async function loadExpenses() {
       console.warn('Failed to load expense categories from master options:', e);
     }
     
-    const res = await fetch('/api/expenses');
-    if (!res.ok) throw new Error('Failed to fetch expenses');
-    allExpenses = await res.json();
+    const allExpenses = await window.apiService.expenses.getAll();
     
     renderTable(allExpenses);
     renderChart(allExpenses);
@@ -200,9 +198,7 @@ async function saveExpense() {
 async function deleteExpense(id) {
   APP.showConfirm('Delete this expense?', async () => {
     try {
-      const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete expense');
+      await window.apiService.expenses.delete(id);
 
       APP.showToast('Expense deleted.', 'warning');
       setTimeout(() => loadExpenses(), 100);

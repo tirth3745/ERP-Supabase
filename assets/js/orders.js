@@ -38,8 +38,7 @@ async function loadOrders() {
     allOrders = await res.json();
     
     // Retrieve client list to map display names
-    const resCli = await fetch('/api/clients');
-    const clientsList = resCli.ok ? await resCli.json() : [];
+    const clientsList = await window.apiService.clients.getAll().catch(() => []);
     
     allOrders.forEach(o => {
       const match = clientsList.find(c => c.id === o.client_id);
@@ -258,9 +257,7 @@ function renderOrderItemsDetailTable(data) {
 
 async function viewOrder(id) {
   try {
-    const res = await fetch(`/api/orders/${id}`);
-    if (!res.ok) throw new Error('Failed to fetch order details');
-    const o = await res.json();
+    const o = await window.apiService.orders.getById(id);
 
     const balance = parseFloat(o.total_amount) - parseFloat(o.paid_amount || 0);
     let statusVal = o.status || 'Pending';
@@ -347,8 +344,7 @@ async function populateClientSelect() {
   const sel = document.getElementById('client-select');
   if (!sel) return;
   try {
-    const res = await fetch('/api/clients');
-    const clients = res.ok ? await res.json() : [];
+    const clients = await window.apiService.clients.getAll().catch(() => []);
     sel.innerHTML = '<option value="">Select Client</option>' + clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   } catch (err) {
     console.error('populateClientSelect failed:', err);
@@ -906,9 +902,7 @@ async function saveOrder() {
 async function deleteOrder(id) {
   APP.showConfirm('Delete this order and its items?', async () => {
     try {
-      const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete order');
+      await window.apiService.orders.delete(id);
       
       APP.showToast('Order deleted!', 'success');
       setTimeout(() => loadOrders(), 100);

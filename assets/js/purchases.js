@@ -22,13 +22,10 @@ async function loadPurchases() {
     await refreshPurchasableItems();
     
     console.log('Purchases: Loading purchases from database...');
-    const res = await fetch('/api/purchases');
-    if (!res.ok) throw new Error('Failed to fetch purchases from API');
-    allPurchases = await res.json();
+    const allPurchases = await window.apiService.purchases.getAll();
     
     // Retrieve supplier list to map display names
-    const resSup = await fetch('/api/suppliers');
-    const suppliersList = resSup.ok ? await resSup.json() : [];
+    const suppliersList = await window.apiService.suppliers.getAll().catch(() => []);
     
     allPurchases.forEach(p => {
       const match = suppliersList.find(s => s.id === p.supplier_id);
@@ -58,10 +55,8 @@ async function loadPurchases() {
 
 async function refreshPurchasableItems() {
   try {
-    const resProd = await fetch('/api/products');
-    const p = resProd.ok ? await resProd.json() : [];
-    const resInv = await fetch('/api/inventory');
-    const i = resInv.ok ? await resInv.json() : [];
+    const p = await window.apiService.products.getAll().catch(() => []);
+    const i = await window.apiService.inventory.getAll().catch(() => []);
     
     const combined = [
       ...p.map(x => ({ id: x.id, name: x.name, unit: x.unit || 'Nos', type: 'Catalog' })),
@@ -140,8 +135,7 @@ async function populateSupplierSelect() {
   const sel = document.getElementById('supplier-select');
   if (!sel) return;
   try {
-    const res = await fetch('/api/suppliers');
-    const suppliers = res.ok ? await res.json() : [];
+    const suppliers = await window.apiService.suppliers.getAll().catch(() => []);
     sel.innerHTML = '<option value="">Select Supplier</option>' + suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
   } catch (err) {
     console.error('populateSupplierSelect failed:', err);
@@ -164,9 +158,7 @@ async function openEdit(id) {
   editingPurchaseId = id;
   try {
     await refreshPurchasableItems();
-    const res = await fetch(`/api/purchases/${id}`);
-    if (!res.ok) throw new Error('Failed to fetch purchase details');
-    const p = await res.json();
+    const p = await window.apiService.purchases.getById(id);
     
     document.getElementById('modal-title').textContent = 'Edit Purchase';
     UTILS.populateForm('purchase-form', p);
@@ -401,9 +393,7 @@ async function savePurchase() {
 async function deletePurchase(id) {
   APP.showConfirm('Delete this purchase and all its line items?', async () => {
     try {
-      const res = await fetch(`/api/purchases/${id}`, { method: 'DELETE' });
-      const result = await res.json();
-      if (!res.ok || !result.success) throw new Error(result.message || 'Failed to delete purchase');
+      await window.apiService.purchases.delete(id);
       
       APP.showToast('Purchase deleted and inventory restored!', 'success');
       setTimeout(() => loadPurchases(), 100);

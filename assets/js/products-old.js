@@ -44,9 +44,9 @@ function renderTable(data) {
   tbody.innerHTML = data.map(p => `<tr>
     <td><input type="checkbox" class="row-check" value="${p.id}"></td>
     <td class="cell-bold">${p.name}</td>
-    <td class="cell-mono">${p.batch_no || '—'}</td>
-    <td>${p.brand || '—'}</td>
-    <td><span class="badge badge-purple">${p.category || '—'}</span></td>
+    <td class="cell-mono">${p.batch_no || 'ï¿½'}</td>
+    <td>${p.brand || 'ï¿½'}</td>
+    <td><span class="badge badge-purple">${p.category || 'ï¿½'}</span></td>
     <td>${UTILS.fmtCurrency(p.purchase_price || 0)}</td>
     <td>${UTILS.fmtCurrency(p.sell_price || 0)}</td>
     <td><div class="row-actions">
