@@ -50,6 +50,15 @@ window.fetch = async function(...args) {
     
     try {
       if (method === 'GET') {
+        if (table === 'reports' && id === 'summary') {
+            const urlObj = new URL('http://localhost' + url);
+            const fromDate = urlObj.searchParams.get('from') || '';
+            const toDate = urlObj.searchParams.get('to') || '';
+            const { data, error } = await supabase.rpc('get_reports_summary', { from_date: fromDate, to_date: toDate });
+            if (error) { alert('Supabase Error on reports: ' + error.message); throw error; }
+            return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' }});
+        }
+
         if (id && id !== 'packaging') {
             if (supaTable === 'orders') {
                 const { data } = await supabase.from('orders').select('*').eq('id', id).single();
@@ -118,5 +127,6 @@ window.fetch = async function(...args) {
   
   return originalFetchSupabase(...args);
 };
+
 
 
