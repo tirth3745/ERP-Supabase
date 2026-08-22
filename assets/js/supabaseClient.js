@@ -31,9 +31,9 @@ window.fetch = async function(...args) {
   const options = args[1] || {};
   const method = (options.method || 'GET').toUpperCase();
   
-  if (url.startsWith('/api/')) {
+  if (url.includes('/api/')) {
     console.log('[Supabase Interceptor]', method, url);
-    const path = url.replace('/api/', '').split('?')[0];
+    const path = url.substring(url.indexOf('/api/') + 5).split('?')[0];
     const parts = path.split('/');
     const table = parts[0];
     const id = parts[1];
@@ -118,3 +118,4 @@ window.fetch = async function(...args) {
   
   return originalFetchSupabase(...args);
 };
+
