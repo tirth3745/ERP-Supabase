@@ -70,12 +70,12 @@ window.fetch = async function(...args) {
                 return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' }});
             }
             const { data, error } = await supabase.from(supaTable).select('*').eq('id', id).single();
-            if (error) throw error;
+            if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
             return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' }});
         }
         
         const { data, error } = await supabase.from(supaTable).select('*');
-        if (error) throw error;
+        if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' }});
       }
       
@@ -84,7 +84,7 @@ window.fetch = async function(...args) {
         let items = body.items;
         delete body.items; // Don't insert items into main table
         const { data, error } = await supabase.from(supaTable).insert([body]).select();
-        if (error) throw error;
+        if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         let newRecord = data[0];
         
         // Mock inserting items
@@ -101,21 +101,22 @@ window.fetch = async function(...args) {
         const body = JSON.parse(options.body);
         delete body.items;
         const { data, error } = await supabase.from(supaTable).update(body).eq('id', id).select();
-        if (error) throw error;
+        if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         return new Response(JSON.stringify({ success: true, data: data[0] }), { status: 200 });
       }
       
       if (method === 'DELETE') {
         const { error } = await supabase.from(supaTable).delete().eq('id', id);
-        if (error) throw error;
+        if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         return new Response(JSON.stringify({ success: true }), { status: 200 });
       }
     } catch (err) {
-      console.error('[Supabase Interceptor Error]', err);
+      console.error('[Supabase Interceptor Error]', err); if (!err.message.includes('Failed to fetch')) { alert('Interceptor Error: ' + err.message); }
       return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
   }
   
   return originalFetchSupabase(...args);
 };
+
 
