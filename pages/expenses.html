@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroChem ERP — Expenses</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js?v=41" defer></script>
+    <link rel="stylesheet" href="../assets/css/style.css?v=41"><link rel="stylesheet" href="../assets/css/tables.css?v=41"><link rel="stylesheet" href="../assets/css/forms.css?v=41"><link rel="stylesheet" href="../assets/css/responsive.css?v=41"><link rel="stylesheet" href="../assets/css/components/search-select.css?v=41">
+  <link rel="stylesheet" href="../assets/css/dashboard.css?v=41">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabaseClient.js"></script>
+</head>
+<body>
+<div class="app-layout" id="app-layout">
+  <script src="../assets/js/shared-layout.js?v=41"></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>LAYOUT.injectLayout('Expenses','Expenses'))</script>
+  <main class="main-content" id="main-content">
+    <div class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h2>Expenses</h2><p>Track and categorise operational expenses</p></div>
+        <div class="page-header-right">
+
+          <button class="btn btn-primary" onclick="openAdd()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Expense</button>
+        </div>
+      </div>
+
+      <!-- KPI Statistics Grid -->
+      <div class="kpi-grid transaction-kpi-grid" style="margin-bottom:20px;">
+        <div class="stat-card transaction-stat-card transaction-stat-card-receipt">
+          <div class="transaction-stat-top">
+            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div>
+          </div>
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value" id="kpi-total-expenses">₹0.00</div>
+          <div class="transaction-stat-meta">Aggregated recorded cash outflows</div>
+        </div>
+        <div class="stat-card transaction-stat-card transaction-stat-card-payment">
+          <div class="transaction-stat-top">
+            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          </div>
+          <div class="stat-label">This Month</div>
+          <div class="stat-value" id="kpi-month-expenses">₹0.00</div>
+          <div class="transaction-stat-meta">Expenses incurred in current month</div>
+        </div>
+        <div class="stat-card transaction-stat-card transaction-stat-card-net">
+          <div class="transaction-stat-top">
+            <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          </div>
+          <div class="stat-label">Largest Category</div>
+          <div class="stat-value" id="kpi-largest-category" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">—</div>
+          <div class="transaction-stat-meta">Highest spending category</div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-header"><div><div class="chart-card-title">By Category</div><div class="chart-card-subtitle">Expense category distribution breakdown</div></div></div>
+          <div class="chart-container" style="position:relative; height:240px;"><canvas id="expense-chart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Recent Spending Trends</div>
+              <div class="chart-card-subtitle">Quick overview of financial disbursements</div>
+            </div>
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; justify-content: center; height: calc(100% - 70px);">
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted);">
+              Ensure all operational outlays—including raw materials purchasing, packaging supplies, freight, plant electricity, maintenance, and administrative outlays—are fully recorded.
+            </div>
+            <div style="margin-top: 20px; padding: 12px 16px; border-left: 3px solid var(--primary); background: rgba(255,255,255,0.02); border-radius: 4px; font-size: 13px; color: var(--text-primary);">
+              <strong>Pro-tip:</strong> Maintain regular reconciliation of expense receipts to ensure accurate profit margins in Reports trends.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap data-table-wrap-mobile" style="border-radius:var(--radius-lg)">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <div class="table-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="search-input" placeholder="Search expenses…"></div>
+            <div class="table-filter"><select id="cat-filter"><option value="">All Categories</option><option>Insecticides</option><option>Fungicides</option><option>Herbicides</option><option>PGR</option></select></div>
+          </div>
+          <div class="table-toolbar-right">
+            <span class="text-sm text-muted" id="total-info">Loading…</span>
+            <span class="badge badge-purple" id="total-amount">₹0.00</span>
+          </div>
+        </div>
+        <table class="data-table" id="expenses-table">
+          <thead><tr><th><input type="checkbox"></th><th>Ref No</th><th>Date</th><th>Category</th><th>Description</th><th>Mode</th><th>Amount</th><th>Actions</th></tr></thead>
+          <tbody><tr><td colspan="8"><div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title" id="modal-title">Add Expense</span><button class="modal-close" onclick="APP.closeModal('expense-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <form id="expense-form" onsubmit="return false">
+        <section class="product-form-card">
+          <div class="product-form-card-head">
+            <h4>Transaction Details</h4>
+            <p>Categorize the type, date, transaction amount, and ledger path.</p>
+          </div>
+          <div class="form-grid product-form-grid">
+            <div class="form-group">
+              <label class="form-label">Category <span class="required">*</span></label>
+              <select class="form-select" name="category"><option>Insecticides</option><option>Fungicides</option><option>Herbicides</option><option>PGR</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date <span class="required">*</span></label>
+              <input class="form-input" name="date" id="expense-date-field" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount (₹) <span class="required">*</span></label>
+              <input class="form-input" name="amount" type="number" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Mode</label>
+              <select class="form-select" name="payment_mode"><option>Cash</option><option>Bank Transfer</option><option>NEFT</option><option>Cheque</option><option>UPI</option></select>
+            </div>
+          </div>
+        </section>
+
+        <section class="product-form-card">
+          <div class="product-form-card-head">
+            <h4>Additional Information</h4>
+            <p>Detailed description of the operating or capital disbursement.</p>
+          </div>
+          <div class="form-grid product-form-grid">
+            <div class="form-group form-col-full">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" name="description" rows="2" placeholder="Expense details…"></textarea>
+            </div>
+          </div>
+        </section>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="APP.closeModal('expense-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/database.js?v=41"></script><script src="../assets/js/utils.js?v=41"></script><script src="../assets/js/components/search-select.js?v=41"></script><script src="../assets/js/app.js?v=41"></script><script src="../assets/js/expenses.js?v=41"></script>
+</body></html>

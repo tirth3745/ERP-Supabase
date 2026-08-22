@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroChem ERP — Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js?v=41" defer></script>
+  <link rel="stylesheet" href="../assets/css/style.css?v=41"><link rel="stylesheet" href="../assets/css/dashboard.css?v=41"><link rel="stylesheet" href="../assets/css/tables.css?v=41"><link rel="stylesheet" href="../assets/css/forms.css?v=41"><link rel="stylesheet" href="../assets/css/responsive.css?v=41">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabaseClient.js"></script>
+</head>
+<body>
+<div class="app-layout" id="app-layout">
+  <script src="../assets/js/shared-layout.js?v=41"></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>LAYOUT.injectLayout('Reports','Analytics / Reports'))</script>
+  <main class="main-content" id="main-content">
+    <div class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h2>Business Reports</h2><p>Sales analytics, P&L overview, and performance insights</p></div>
+        <div class="page-header-right">
+          <div class="date-range" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+            <input class="form-input" type="date" id="date-from">
+            <span class="date-sep">to</span>
+            <input class="form-input" type="date" id="date-to">
+            <button class="btn btn-secondary" onclick="applyDateFilter()">Apply</button>
+            <button class="btn btn-ghost" onclick="resetDateFilter()" title="Reset Filter" style="padding:8px 12px;min-height:38px">Reset</button>
+            <button class="btn btn-primary" onclick="exportReportToCSV()" style="display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:8px 14px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary KPIs -->
+      <div class="kpi-grid" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div class="stat-label">Total Revenue</div><div class="stat-value" id="rpt-revenue">—</div><div class="stat-trend up">Delivered orders</div></div>
+        <div class="stat-card"><div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/></svg></div><div class="stat-label">Total Expenses</div><div class="stat-value" id="rpt-expenses">—</div><div class="stat-trend down">Operational costs</div></div>
+        <div class="stat-card"><div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg></div><div class="stat-label">Total Purchases</div><div class="stat-value" id="rpt-purchases">—</div><div class="stat-trend down">Raw materials</div></div>
+        <div class="stat-card"><div class="stat-icon purple"><span aria-hidden="true" style="font-size:24px;font-weight:800;line-height:1">₹</span></div><div class="stat-label">Net Profit</div><div class="stat-value" id="rpt-profit">—</div><div class="stat-trend up">Revenue - Costs</div></div>
+      </div>
+
+      <!-- Chart Row -->
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-header"><div><div class="chart-card-title">Sales Trend</div><div class="chart-card-subtitle">Monthly revenue over time</div></div></div>
+          <div class="chart-container"><canvas id="sales-trend-chart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header"><div><div class="chart-card-title">Expense Breakdown</div><div class="chart-card-subtitle">By category</div></div></div>
+          <div class="chart-container"><canvas id="expense-trend-chart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Top Tables -->
+      <div class="activity-row">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Products by Revenue</div></div>
+          <div class="card-body data-table-wrap-mobile" id="top-products-table-wrap" style="padding:0">
+            <table class="data-table" id="top-products-table">
+              <thead><tr><th>#</th><th>Product</th><th>Revenue</th></tr></thead>
+              <tbody><tr><td colspan="3" style="padding:20px;text-align:center"><div class="spinner" style="margin:0 auto"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Clients by Revenue</div></div>
+          <div class="card-body data-table-wrap-mobile" id="top-clients-table-wrap" style="padding:0">
+            <table class="data-table" id="top-clients-table">
+              <thead><tr><th>#</th><th>Client</th><th>Revenue</th></tr></thead>
+              <tbody><tr><td colspan="3" style="padding:20px;text-align:center"><div class="spinner" style="margin:0 auto"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/database.js?v=41"></script><script src="../assets/js/utils.js?v=41"></script><script src="../assets/js/app.js?v=41"></script><script src="../assets/js/reports.js?v=41"></script>
+</body></html>

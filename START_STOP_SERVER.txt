@@ -1,0 +1,25 @@
+How to start the server
+
+1. Open a PowerShell terminal in the project root folder.
+2. Run this command:
+   npm.cmd start
+3. Wait until you see a message like:
+   Local Address: http://localhost:7890
+4. Open http://localhost:7890 in your browser.
+
+How to stop the server
+
+1. Go to the terminal where the server is running.
+2. Press Ctrl+C.
+3. If PowerShell asks to terminate the batch job, type Y and press Enter.
+4. Confirm the server stopped by checking that the terminal returned to the prompt.
+
+Notes
+
+- On Windows PowerShell, use npm.cmd start instead of npm start.
+- If the server is already running, do not start a second copy on the same port.
+
+
+Username, Password
+admin.js file
+Path to the file is backend\config\admin.js

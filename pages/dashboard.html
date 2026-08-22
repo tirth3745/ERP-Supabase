@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroChem ERP â€” Dashboard</title>
+  <meta name="description" content="AgroChem ERP: Premium internal inventory and business management dashboard for pesticide manufacturing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js?v=41" defer></script>
+    <link rel="stylesheet" href="../assets/css/style.css?v=41">
+  <link rel="stylesheet" href="../assets/css/dashboard.css?v=41">
+  <link rel="stylesheet" href="../assets/css/tables.css?v=41">
+  <link rel="stylesheet" href="../assets/css/forms.css?v=41">
+  <link rel="stylesheet" href="../assets/css/responsive.css?v=41">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabaseClient.js"></script>
+</head>
+<body>
+<div class="app-layout" id="app-layout">
+  <script src="../assets/js/shared-layout.js?v=41"></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>LAYOUT.injectLayout('Dashboard','Dashboard'))</script>
+
+  <main class="main-content" id="main-content">
+    <div class="page-body">
+      <div class="quick-actions">
+        <a href="orders.html" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div><span class="quick-action-label">New Order</span></a>
+        <a href="clients.html" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg></div><span class="quick-action-label">Add Client</span></a>
+        <a href="purchases.html" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg></div><span class="quick-action-label">New Purchase</span></a>
+        <a href="reports.html" class="quick-action-card"><div class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><span class="quick-action-label">View Reports</span></a>
+      </div>
+
+      <div class="kpi-grid">
+        <a href="transactions.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon purple"><span aria-hidden="true" style="font-size:24px;font-weight:800;line-height:1">₹</span></div>
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value" id="kpi-revenue">Loading…</div>
+          <div class="stat-trend up" id="kpi-revenue-trend">Total Sales</div>
+        </a>
+        <a href="orders.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div>
+          <div class="stat-label">Active Orders</div>
+          <div class="stat-value" id="kpi-orders">…</div>
+          <div class="stat-trend up">Pending + Processing</div>
+        </a>
+        <a href="transactions.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="7" x2="7" y2="17"/><polyline points="17 17 7 17 7 7"/></svg></div>
+          <div class="stat-label">Total Cash Received</div>
+          <div class="stat-value" id="kpi-received">Loading…</div>
+          <div class="stat-trend up">From Clients</div>
+        </a>
+        <a href="clients.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+          <div class="stat-label">Outstanding Amount</div>
+          <div class="stat-value" id="kpi-outstanding">Loading…</div>
+          <div class="stat-trend down">Receivables</div>
+        </a>
+        <a href="transactions.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="10" x2="12" y2="10"/></svg></div>
+          <div class="stat-label">Net Cash on Hand</div>
+          <div class="stat-value" id="kpi-cash-balance">Loading…</div>
+          <div class="stat-trend up">Available Balance</div>
+        </a>
+        <a href="reports.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+          <div class="stat-label">Expenses</div>
+          <div class="stat-value" id="kpi-expenses">Loading…</div>
+          <div class="stat-trend down">Total Outflow</div>
+        </a>
+        <a href="reports.html" class="stat-card" style="text-decoration: none; color: inherit; display: block;">
+          <div class="stat-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="stat-label">Profit</div>
+          <div class="stat-value" id="kpi-profit">Loading…</div>
+          <div class="stat-trend up">Net Earnings</div>
+        </a>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div><div class="chart-card-title">Revenue Overview</div><div class="chart-card-subtitle">Monthly sales performance</div></div>
+            <div class="chart-tabs">
+              <button class="chart-tab active" onclick="switchRevenueTab('monthly',this)">Monthly</button>
+              <button class="chart-tab" onclick="switchRevenueTab('weekly',this)">Weekly</button>
+            </div>
+          </div>
+          <div class="chart-container"><canvas id="revenue-chart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div><div class="chart-card-title">Product Categories</div><div class="chart-card-subtitle">By stock value</div></div>
+          </div>
+          <div class="chart-container"><canvas id="category-chart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="activity-row">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Recent Orders</div><div class="card-subtitle">Latest 5 orders</div></div><a href="orders.html" class="btn btn-ghost btn-sm">View All</a></div>
+          <div class="card-body" id="recent-orders-list"><p class="text-muted text-sm">Loading…</p></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Low Stock Alerts</div><div class="card-subtitle">Below minimum threshold</div></div><a href="products.html" class="btn btn-ghost btn-sm">Manage</a></div>
+          <div class="card-body" id="stock-alerts-list"><p class="text-muted text-sm">Loading…</p></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/database.js?v=41"></script>
+<script src="../assets/js/utils.js?v=41"></script>
+<script src="../assets/js/app.js?v=41"></script>
+<script src="../assets/js/dashboard.js?v=41"></script>
+</body>
+</html>
