@@ -310,7 +310,7 @@ BEGIN
       'activeOrders', (SELECT count(*) FROM orders WHERE status IN ('Pending', 'Processing')),
       'amountReceived', COALESCE((SELECT SUM(amount) FROM transactions WHERE type='Receipt'), 0),
       'outstandingAmount', COALESCE((SELECT SUM(balance) FROM clients), 0),
-      'cashBalance', COALESCE((SELECT SUM(balance) FROM accounts), 0),
+      'cashBalance', COALESCE((SELECT SUM(CASE WHEN type = 'Receipt' THEN amount ELSE -amount END) FROM transactions), 0),
       'expenses', COALESCE((SELECT SUM(amount) FROM expenses), 0),
       'profit', 0
     ),
@@ -320,3 +320,4 @@ BEGIN
   RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
