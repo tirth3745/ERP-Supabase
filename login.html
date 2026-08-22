@@ -325,11 +325,6 @@ async function handleLogin(event) {
   errorDiv.classList.remove('show');
 
   try {
-    if (username === 'admin' && password === 'admin') {
-      localStorage.setItem('mock_session', 'true');
-      window.location.href = 'pages/dashboard.html';
-      return;
-    }
     const { data, error } = await supabase.auth.signInWithPassword({ email: username, password });
     if (error) {
       errorText.textContent = error.message;
@@ -357,6 +352,7 @@ supabase.auth.getSession().then(({ data }) => {
 </script>
 </body>
 </html>
+
 
 
 

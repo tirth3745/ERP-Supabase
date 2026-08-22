@@ -300,11 +300,10 @@ CREATE TABLE IF NOT EXISTS master_options (
 
 -- Supabase Dashboard RPC Function
 CREATE OR REPLACE FUNCTION get_dashboard_stats()
-RETURNS json AS 
+RETURNS json AS $$
 DECLARE
   result json;
 BEGIN
-  -- Simple mock implementation to get started. User should replace this with real aggregation logic.
   SELECT json_build_object(
     'kpis', json_build_object(
       'revenue', COALESCE((SELECT SUM(total_amount) FROM orders), 0),
@@ -320,4 +319,4 @@ BEGIN
   ) INTO result;
   RETURN result;
 END;
- LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
