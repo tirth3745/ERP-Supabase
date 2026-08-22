@@ -91,7 +91,7 @@ window.fetch = async function(...args) {
       if (method === 'POST') {
         const body = JSON.parse(options.body);
         let items = body.items;
-        delete body.items; // Don't insert items into main table
+        delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials;
         const { data, error } = await supabase.from(supaTable).insert([body]).select();
         if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         let newRecord = data[0];
@@ -108,7 +108,7 @@ window.fetch = async function(...args) {
       
       if (method === 'PUT') {
         const body = JSON.parse(options.body);
-        delete body.items;
+        delete body.items; delete body.packaging_options; delete body.ingredients; delete body.materials;
         const { data, error } = await supabase.from(supaTable).update(body).eq('id', id).select();
         if (error) { alert('Supabase Error on ' + supaTable + ': ' + error.message); throw error; }
         return new Response(JSON.stringify({ success: true, data: data[0] }), { status: 200 });
@@ -127,6 +127,9 @@ window.fetch = async function(...args) {
   
   return originalFetchSupabase(...args);
 };
+
+
+
 
 
 
